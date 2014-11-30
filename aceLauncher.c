@@ -76,5 +76,6 @@ void ace(char *pw_dir) {
 	memcpy(wd,pw_dir,i);
 	memcpy(wd+i,ACE,sizeof(ACE));
 	chdir(wd);
+
 	execl("aces","aces",0);
 }
