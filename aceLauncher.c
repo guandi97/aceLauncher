@@ -8,7 +8,9 @@
 
 #define WAR "/My Games/WarThunder"
 #define ACE "/Library/Application Support/Steam/SteamApps/common/War Thunder/WarThunderLauncher.app/Contents/WarThunder.app/Contents/MacOS"
+
 void ace(char*);
+
 int main() {
 	size_t j;
 	int i;
