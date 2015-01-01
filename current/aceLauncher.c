@@ -6,10 +6,13 @@
 #include <errno.h>
 
 #define el else if
-#define ACE	""
-#define WAR 	""
-#define INDEX 	""
-#define CONFIG	""
+
+#ifdef __linux__
+	#define ACES	"/.steam/steam/steamapps/common/War Thunder/aces"
+	#define PROF 	"/.steam/steam/steamapps/common/War Thunder/profiles"
+	#define INDEX 	"/.steam/steam/steamapps/common/War Thunder/profiles/index"
+	#define CONFIG	"/.steam/steam/steamapps/common/War Thunder/config.blk"
+#endif
 
 int spicy(int);
 int wolf();
@@ -17,8 +20,8 @@ int wolf();
 char selection=0;
 char selection_max=8;
 char *profiles[8];
-char *ace=0;
-char *war=0;
+char *aces=0;
+char *prof=0;
 char *home;
 int s_home;
 int indexFd=0;
@@ -32,16 +35,16 @@ int main(int argc,char **argv) {
 	s_home=strlen(home);
 
 	int checkRet;
-	void *checkAddr[]={&&ICHECK,&&ACHECK,&&WCHECK};
+	void *checkAddr[]={&&ICHECK,&&ACHECK,&&PCHECK};
 	goto CHECKSKIP;
 	CHECKARG:;
 		if(argv[i][0]!='-') {
 			printf( 
-				"aceLauncher: used to manage config.blk files\n"
-				"\t	usage: aceLauncher\n"
+				"acesLauncher: used to manage config.blk files\n"
+				"\t	usage: acesLauncher\n"
 				"\t	[-i] <file>\t	index file\n"
-				"\t	[-a] <dir>\t	ace dir\n"
-				"\t	[-w] <dir>\t	\n"
+				"\t	[-a] <exec>\t	aces\n"
+				"\t	[-p] <dir>\t	profiles\n"
 				"\t	[-s] <num 0-7>\tselection\n"
 			);
 			return -1;
@@ -49,7 +52,8 @@ int main(int argc,char **argv) {
 	goto *checkAddr[checkRet];
 	CHECKSKIP:;
 
-	for(i=0;*(argv+i)!=0;i++) {
+	for(i=1;i<argc;i++) {
+		printf("%s\n",argv[i]);
 		if(memcmp(argv[i],"-i",2)) {
 			i++;
 			checkRet=0;
@@ -64,13 +68,13 @@ int main(int argc,char **argv) {
 			i++;
 			goto CHECKARG;
 			ACHECK:;
-			ace=argv[i];
+			aces=argv[i];
 		}
 		el(memcmp(argv[i],"-w",2)) {
 			i++;
 			goto CHECKARG;
-			WCHECK:;
-			war=argv[i];
+			PCHECK:;
+			prof=argv[i];
 		}
 		el(memcmp(argv[i],"-s",2)) {
 			selection=atoi(argv[++i]);
@@ -84,9 +88,7 @@ int main(int argc,char **argv) {
 	if(indexFd) {
 		char *index_loc=malloc(s_home+sizeof(INDEX));
 		memcpy(home,index_loc,i);
-		chdir(index_loc);
-		indexFd=open("index");
-		if(indexFd==-1) {
+		if((indexFd=open(index_loc))==-1) {
 			printf("error openning index file");
 			return errno;
 		}
@@ -104,12 +106,12 @@ int main(int argc,char **argv) {
 
 	if((wolfId=fork())) wolf(wolfP[0]);
 
-	if(war) {
-		war=malloc(s_home+sizeof(WAR));
-		memcpy(home,war,s_home);
-		memcpy(WAR,war,sizeof(WAR));
+	if(prof) {
+		prof=malloc(s_home+sizeof(PROF));
+		memcpy(home,prof,s_home);
+		memcpy(PROF,prof,sizeof(PROF));
 	}
-	chdir(war);
+	chdir(prof);
 
 	if((spicyId=fork())) spicy(spicyP[1]);
 
@@ -146,13 +148,12 @@ int spicy(int pfd) {
 	return 0;
 }
 int wolf(int pfd) {
-	if(ace==0) {
-		ace=malloc(s_home+sizeof(ACE));
-		memcpy(home,ace,s_home);
-		memcpy(ACE,ace,sizeof(ACE));
+	if(aces==0) {
+		aces=malloc(s_home+sizeof(ACES));
+		memcpy(home,aces,s_home);
+		memcpy(ACES,aces,sizeof(ACES));
 	}
 		
-	chdir(ace);
 	read(pfd,&pfd,4);			//ghetto block
-	execl(ace,ace,0);
+	execl(aces,"aces",0);
 }
